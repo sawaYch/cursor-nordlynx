@@ -76,7 +76,7 @@ chmod +x setup.sh
 
 The script will:
 
-1. Locate `wireproxy`: `bin/` first, then PATH; with Homebrew, `brew install wireproxy`; otherwise download from GitHub into `bin/`.
+1. Locate `wireproxy`: `bin/` first, then PATH; otherwise `brew install go` and `go install github.com/windtf/wireproxy/cmd/wireproxy@latest`.
 2. Call the NordVPN API for the private key and a recommended server, then write `wireproxy.conf` (mode 600).
 3. Update `~/Library/Application Support/Cursor/User/settings.json` (backs up to `.bak` first). Same keys as Windows, except terminal env uses `terminal.integrated.env.osx`.
 4. Update `~/.cursor/cli-config.json`: `"network": { "useHttp1ForAgent": true }`.

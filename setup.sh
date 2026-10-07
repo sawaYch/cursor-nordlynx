@@ -164,24 +164,27 @@ if [ ! -x "$EXE" ]; then
   if command -v wireproxy >/dev/null 2>&1; then
     EXE="$(command -v wireproxy)"
     echo "Using installed $EXE"
-  elif command -v brew >/dev/null 2>&1; then
-    echo "brew install wireproxy"
-    brew install wireproxy
-    EXE="$(command -v wireproxy)"
   else
-    case "$(uname -m)" in
-      arm64) arch=arm64 ;;
-      x86_64) arch=amd64 ;;
-      *) die "Unsupported architecture $(uname -m)" ;;
-    esac
-    url="https://github.com/pufferffish/wireproxy/releases/latest/download/wireproxy_darwin_$arch.tar.gz"
-    echo "Downloading $url"
-    mkdir -p "$BIN_DIR"
-    curl -fsSL "$url" | tar -xz -C "$BIN_DIR"
-    chmod +x "$EXE"
-    xattr -d com.apple.quarantine "$EXE" 2>/dev/null || true
+    command -v brew >/dev/null 2>&1 || die "Homebrew is required to install Go (https://brew.sh)."
+    echo "brew install go"
+    brew install go
+    export PATH="$(brew --prefix)/bin:${PATH}"
+    command -v go >/dev/null 2>&1 || die "go is not on PATH after brew install."
+    echo "go install github.com/windtf/wireproxy/cmd/wireproxy@latest"
+    go install github.com/windtf/wireproxy/cmd/wireproxy@latest
+    gobin="$(go env GOBIN)"
+    [ -n "$gobin" ] || gobin="$(go env GOPATH)/bin"
+    if [ -x "$gobin/wireproxy" ]; then
+      EXE="$gobin/wireproxy"
+    elif command -v wireproxy >/dev/null 2>&1; then
+      EXE="$(command -v wireproxy)"
+    else
+      die "go install finished, but wireproxy was not found in $gobin."
+    fi
+    echo "Using $EXE"
   fi
 fi
+[ -x "$EXE" ] || die "wireproxy is not executable: $EXE"
 
 # ---------------------------------------------------------------- NordVPN API
 step "Fetch NordLynx private key and server from NordVPN"
